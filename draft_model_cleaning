@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Feb 28 16:27:44 2018
+
+@author: dgrubis
+"""
+
+import pandas as pd
+
+#Data Cleaning
+
+#Removing duplicates from NCAA average stats and keeping their best college season based on PPG
+df = pd.read_excel('collegedata.xlsx', sheetname = 'Sheet1')
+   
+ncaa_avg_stats = df.sort_values('PPG').drop_duplicates(subset='Player', keep = 'last')
+
+#Export to csv
+ncaa_avg_stats.to_csv('/Users/dgrubis/Desktop/STATS 535/ncaa_avg_stats.csv', index=False)
+
+#Removing duplicates from NCAA advanced stats and keeping their best season based on PER
+df2 = pd.read_excel('collegeadvancedstats.xlsx', sheetname = 'Sheet1')
+
+ncaa_adv_stats = df2.sort_values('PER').drop_duplicates(subset='Player', keep = 'last')
+
+#Export to csv
+ncaa_adv_stats.to_csv('/Users/dgrubis/Desktop/STATS 535/ncaa_adv_stats.csv', index=False)
+
+#Read back in the newly created csv files
+ncaa_avg_stats_df = pd.read_csv('ncaa_avg_stats.csv')
+ncaa_adv_stats_df = pd.read_csv('ncaa_adv_stats.csv')
+
+#Merge the two data frames on a full outer join
+merge_df = ncaa_avg_stats_df.merge(ncaa_adv_stats_df, left_on='Player', right_on='Player', how='outer')
+merge_df.head()
+
+#Export merged database as csv
+merge_df.to_csv('/Users/dgrubis/Desktop/STATS 535/merged_ncaa_data.csv', index=False)
+
+#Removing duplicates from wins shared data to retrieve the peak WS for a player over their career
+dfw = pd.read_excel('WS_data.xls', sheetname = 'Sheet1')
+wins_shared = dfw.sort_values('WS').drop_duplicates(subset='Player', keep = 'last')
+#Merge WS data with college data
+merge_df2 = merge_df.merge(wins_shared, left_on='Player', right_on='Player', how='inner')
+#Export WS and college stats merged as CSV
+merge_df2.to_csv('/Users/dgrubis/Desktop/STATS 535/merged_ncaa_WS_data.csv', index=False)
+
+#Read in Draft Combine data and merge together
+dc1 = pd.read_csv('draft_info.csv')
+dc2 = pd.read_csv('draft_combine_adv.csv', encoding='latin-1')
+dc3 = pd.read_csv('draft_combine_h_w.csv', encoding='latin-1')
+dc_merge = dc1.merge(dc2, left_on='Player', right_on='PLAYER', how='outer')
+dc_merge = dc_merge.merge(dc3, left_on='Player', right_on='PLAYER', how='outer')
+dc_merge.to_csv('/Users/dgrubis/Desktop/STATS 535/merged_draft_combine_data.csv')
+
+draft_combine_data = pd.read_csv('/Users/dgrubis/Desktop/STATS 535/merged_draft_combine_data.csv')
+college_data = pd.read_csv('/Users/dgrubis/Desktop/STATS 535/merged_ncaa_WS_data_2.csv')
+
+merge_dc_ncaa = college_data.merge(draft_combine_data, left_on='Player', right_on='Player', how='left')
+merge_dc_ncaa.to_csv('/Users/dgrubis/Desktop/STATS 535/merged_draftcombine_ncaastats.csv')
+
+
+
+#2018 Prospects dataset creation
+
+#Merge advanced and average stats for prospects
+prospects_2018_adv = pd.read_csv('2018_prospects_adv.csv')
+prospects_2018_avg = pd.read_csv('2018_prospects_avg.csv')
+merge_2018 = prospects_2018_avg.merge(prospects_2018_adv, left_on='Player', right_on='Player', how='outer')
+merge_2018.to_csv('/Users/dgrubis/Desktop/STATS 535/2018_prospects_adv_avg.csv')
+
+#Merge big board with projected rank, height, weight, wingspan with players and their weight
+prospects_2018_ranks = pd.read_csv('2018_prospects_bigboard.csv')
+prospects_2018_weights = pd.read_csv('2018_prospects_weight.csv', encoding='latin-1')
+merge_18 = prospects_2018_ranks.merge(prospects_2018_weights, left_on='Player', right_on='Player', how='outer')
+merge_18.to_csv('/Users/dgrubis/Desktop/STATS 535/2018_prospects_big_board.csv')
+
+#Merge big board with stats to form complete prediction set
+bigboard_df = pd.read_csv('2018_prospects_big_board.csv')
+eighteenstats_df = pd.read_csv('2018_prospects_adv_avg.csv')
+finished_merge = bigboard_df.merge(eighteenstats_df, left_on='Player', right_on='Player', how='outer')
+finished_merge.to_csv('/Users/dgrubis/Desktop/STATS 535/2018_prospects_predictions.csv')
