@@ -10,3 +10,5 @@ Database was built from scratch from RealGm, Basketball Reference and NBA.com.
 *Since database was built from scratch I don't have as much data points as I'd like so model results experience pretty significant variance.
 
 *Wins shared also is a metric that has flaws so not a perfect measure for predicting NBA success. 
+
+"draft_model_cleaning" is a python file where I merged and exported csv files to create the database.
